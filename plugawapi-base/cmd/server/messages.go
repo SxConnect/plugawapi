@@ -36,12 +36,14 @@ func (s *server) handleSendText(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) handleListChats(w http.ResponseWriter, r *http.Request) {
 	sid := r.PathValue("sid")
-	_, ok := s.sessions.Get(sid)
+	sess, ok := s.sessions.Get(sid)
 	if !ok {
 		writeJSON(w, 404, map[string]string{"error": "session not found"})
 		return
 	}
-	writeJSON(w, 501, map[string]string{"error": "chat history not implemented; not implemented"})
+	out := s.chatStore.listChats(sid)
+	writeJSON(w, 200, map[string]any{"chats": out})
+	_ = sess
 }
 
 func (s *server) handleListMessages(w http.ResponseWriter, r *http.Request) {
@@ -52,8 +54,8 @@ func (s *server) handleListMessages(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 404, map[string]string{"error": "session not found"})
 		return
 	}
-	_ = jidStr
-	writeJSON(w, 501, map[string]string{"error": "message history not implemented; not implemented"})
+	out := s.chatStore.listMessages(sid, jidStr, 200)
+	writeJSON(w, 200, map[string]any{"messages": out})
 }
 
 func (s *server) handleListContacts(w http.ResponseWriter, r *http.Request) {
