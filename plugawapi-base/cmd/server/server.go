@@ -45,14 +45,7 @@ func newServer(ctx context.Context, dbPath, staticDir string, maxCalls int, log 
 	if err != nil {
 		return nil, err
 	}
-	cs := newChatStore(chatDB)
-	store.SetOSInfo("PlugaWAPI", [3]uint32{0, 1, 0})
-	container := sqlstore.NewWithDB(db, "sqlite3", waLog.Noop)
-	if err := container.Upgrade(ctx); err != nil {
-		return nil, err
-	}
-	// chat storage
-	_, _ = db.Exec(`CREATE TABLE IF NOT EXISTS messages (
+	_, _ = chatDB.Exec(`CREATE TABLE IF NOT EXISTS messages (
 		id TEXT PRIMARY KEY,
 		session_id TEXT NOT NULL,
 		chat_jid TEXT NOT NULL,
@@ -63,6 +56,14 @@ func newServer(ctx context.Context, dbPath, staticDir string, maxCalls int, log 
 		is_from_me INTEGER,
 		created_at TEXT
 	)`)
+	cs := newChatStore(chatDB)
+	store.SetOSInfo("PlugaWAPI", [3]uint32{0, 1, 0})
+	container := sqlstore.NewWithDB(db, "sqlite3", waLog.Noop)
+	if err := container.Upgrade(ctx); err != nil {
+		return nil, err
+	}
+	// chat storage
+
 	store, err := newSessionStore(ctx, db)
 	if err != nil {
 		return nil, err
