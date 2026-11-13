@@ -343,10 +343,13 @@ func (s *server) handleSessionPairCode(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	code, err := sess.client.PairPhone(r.Context(), body.Phone, true, whatsmeow.PairClientChrome, "PlugaWAPI")
+	s.log.Info("pair-code attempt", "phone", body.Phone, "connected", sess.client.IsConnected())
+	code, err := sess.client.PairPhone(r.Context(), body.Phone, true, whatsmeow.PairClientChrome, "Chrome (Linux)")
 	if err != nil {
+		s.log.Error("pair-code failed", "err", err)
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
 	}
+	s.log.Info("pair-code success", "code", code)
 	writeJSON(w, 200, map[string]any{"code": code})
 }
