@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log/slog"
 
+	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	waLog "go.mau.fi/whatsmeow/util/log"
 	_ "modernc.org/sqlite"
@@ -35,6 +36,7 @@ func newServer(ctx context.Context, dbPath, staticDir string, maxCalls int, log 
 		return nil, err
 	}
 	cs := newChatStore(db)
+	store.SetOSInfo("PlugaWAPI", [3]uint32{0, 1, 0})
 	container := sqlstore.NewWithDB(db, "sqlite3", waLog.Noop)
 	if err := container.Upgrade(ctx); err != nil {
 		return nil, err

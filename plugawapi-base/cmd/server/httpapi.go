@@ -52,20 +52,6 @@ func (s *server) routes() http.Handler {
 	mux.HandleFunc("GET /api/webhook", s.handleWebhookConfig)
 	mux.HandleFunc("POST /api/webhook", s.handleWebhookConfig)
 
-	mux.HandleFunc("POST /api/sessions/{sid}/messages", s.handleSendText)
-	mux.HandleFunc("GET /api/sessions/{sid}/chats", s.handleListChats)
-	mux.HandleFunc("GET /api/sessions/{sid}/chats/{jid}/messages", s.handleListMessages)
-	mux.HandleFunc("GET /api/sessions/{sid}/contacts", s.handleListContacts)
-	mux.HandleFunc("GET /api/sessions/{sid}/profile", s.handleProfile)
-	mux.HandleFunc("GET /api/sessions/{sid}/business-profile", s.handleBusinessProfile)
-	mux.HandleFunc("GET /api/sessions/{sid}/groups", s.handleListGroups)
-	mux.HandleFunc("POST /api/sessions/{sid}/newsletter/follow", s.handleNewsletterFollow)
-	mux.HandleFunc("POST /api/sessions/{sid}/newsletter/unfollow", s.handleNewsletterUnfollow)
-	mux.HandleFunc("GET /api/sessions/{sid}/newsletter/info", s.handleNewsletterInfo)
-	mux.HandleFunc("GET /api/sessions/{sid}/newsletter/messages", s.handleNewsletterMessages)
-	mux.HandleFunc("POST /api/sessions/{sid}/react", s.handleReact)
-	mux.HandleFunc("POST /api/sessions/{sid}/presence", s.handlePresenceSubscribe)
-	mux.HandleFunc("GET /api/sessions/{sid}/check", s.handleCheckUser)
 
 	mux.HandleFunc("GET /api/events", s.handleEvents)
 

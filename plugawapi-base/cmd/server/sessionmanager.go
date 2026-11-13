@@ -205,3 +205,4 @@ func (m *SessionManager) disconnectAll() {
 		s.shutdown()
 	}
 }
+
