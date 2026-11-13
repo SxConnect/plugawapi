@@ -131,10 +131,6 @@ func (m *SessionManager) Create(name string) (string, error) {
 	s := newSession(m, id, name, client, m.chatStore)
 	m.register(s)
 	m.broker.emitSessionList(m.infos())
-	if err := s.startPairing(m.appCtx); err != nil {
-		m.log.Error("start pairing failed", "session", id, "err", err)
-		return "", fmt.Errorf("start pairing: %w", err)
-	}
 	m.log.Info("session created", "session", id, "name", name)
 	return id, nil
 }

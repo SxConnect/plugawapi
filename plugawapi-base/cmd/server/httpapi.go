@@ -337,7 +337,7 @@ func (s *server) handleSessionPairCode(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 400, map[string]string{"error": "phone required"})
 		return
 	}
-	if sess.client.Store.ID == nil {
+	if !sess.client.IsConnected() {
 		if err := sess.client.Connect(); err != nil {
 			writeJSON(w, 500, map[string]string{"error": "connect failed: " + err.Error()})
 			return
