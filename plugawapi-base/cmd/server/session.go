@@ -178,6 +178,32 @@ func (s *Session) handleEvent(rawEvt any) {
 		if ac, ok := s.callForEvent(evt.From, evt.Data); ok {
 			ac.cm.HandleCallTerminate(wrapCall(evt.From, evt.Data))
 		}
+	case *events.HistorySync:
+		if evt.Data != nil {
+			for _, conv := range evt.Data.GetConversations() {
+				chatJID := conv.GetID()
+				for _, hm := range conv.GetMessages() {
+					mi := hm.GetMessage()
+					if mi == nil {
+						continue
+					}
+					content := ""
+					if mi.Message != nil {
+						content = mi.Message.GetConversation()
+					}
+					if content == "" {
+						content = "[media]"
+					}
+					ts := time.Unix(int64(mi.GetMessageTimestamp()), 0)
+					fromMe := mi.Key != nil && mi.Key.GetFromMe()
+					sender := ""
+					if mi.Key != nil {
+						sender = mi.Key.GetRemoteJID()
+					}
+					s.chatStore.save(s.id, chatJID, sender, content, "text", ts, fromMe)
+				}
+			}
+		}
 	case *events.Message:
 		text := evt.Message.GetConversation()
 		if text == "" {
