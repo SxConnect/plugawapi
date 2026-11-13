@@ -73,6 +73,7 @@ func (s *server) handleSendMedia(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
 	}
+	s.chatStore.save(sid, jid.String(), sess.client.Store.ID.String(), body.Caption, body.Type, r2.Timestamp, true)
 	writeJSON(w, 200, map[string]any{"id": r2.ID, "timestamp": r2.Timestamp})
 }
 

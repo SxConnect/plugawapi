@@ -35,7 +35,17 @@ func newServer(ctx context.Context, dbPath, staticDir string, maxCalls int, log 
 	if err != nil {
 		return nil, err
 	}
-	cs := newChatStore(db)
+	chatPath := dbPath
+	if len(chatPath) > 3 && chatPath[len(chatPath)-3:] == ".db" {
+		chatPath = chatPath[:len(chatPath)-3] + "_chat.db"
+	} else {
+		chatPath = chatPath + "_chat"
+	}
+	chatDB, err := openDB(chatPath)
+	if err != nil {
+		return nil, err
+	}
+	cs := newChatStore(chatDB)
 	store.SetOSInfo("PlugaWAPI", [3]uint32{0, 1, 0})
 	container := sqlstore.NewWithDB(db, "sqlite3", waLog.Noop)
 	if err := container.Upgrade(ctx); err != nil {

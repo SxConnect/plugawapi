@@ -179,6 +179,7 @@ func (s *Session) handleEvent(rawEvt any) {
 			ac.cm.HandleCallTerminate(wrapCall(evt.From, evt.Data))
 		}
 	case *events.HistorySync:
+		s.log.Info("history sync received", "conversations", len(evt.Data.GetConversations()))
 		if evt.Data != nil {
 			for _, conv := range evt.Data.GetConversations() {
 				chatJID := conv.GetID()
@@ -201,6 +202,7 @@ func (s *Session) handleEvent(rawEvt any) {
 						sender = mi.Key.GetRemoteJID()
 					}
 					s.chatStore.save(s.id, chatJID, sender, content, "text", ts, fromMe)
+					s.log.Info("history msg saved", "chat", chatJID)
 				}
 			}
 		}

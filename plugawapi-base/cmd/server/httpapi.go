@@ -20,6 +20,7 @@ func (s *server) routes() http.Handler {
 	mux.HandleFunc("DELETE /api/sessions/{sid}", s.handleSessionDelete)
 	mux.HandleFunc("POST /api/sessions/{sid}/logout", s.handleSessionLogout)
 	mux.HandleFunc("POST /api/sessions/{sid}/pair", s.handleSessionPair)
+	mux.HandleFunc("POST /api/sessions/{sid}/reconnect", s.handleReconnect)
 	mux.HandleFunc("POST /api/sessions/{sid}/calls", s.handleStartCall)
 	mux.HandleFunc("POST /api/sessions/{sid}/calls/{id}/webrtc", s.handleWebRTC)
 	mux.HandleFunc("POST /api/sessions/{sid}/calls/{id}/accept", s.handleAccept)
@@ -305,4 +306,18 @@ func normalizePhone(p string) string {
 		}
 	}
 	return b.String()
+}
+
+func (s *server) handleReconnect(w http.ResponseWriter, r *http.Request) {
+	sess, ok := s.sessions.Get(r.PathValue("sid"))
+	if !ok {
+		writeJSON(w, 404, map[string]string{"error": "session not found"})
+		return
+	}
+	sess.client.Disconnect()
+	if err := sess.client.Connect(); err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, 200, map[string]any{"status": "ok"})
 }
