@@ -337,6 +337,12 @@ func (s *server) handleSessionPairCode(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 400, map[string]string{"error": "phone required"})
 		return
 	}
+	if sess.client.Store.ID == nil {
+		if err := sess.client.Connect(); err != nil {
+			writeJSON(w, 500, map[string]string{"error": "connect failed: " + err.Error()})
+			return
+		}
+	}
 	code, err := sess.client.PairPhone(r.Context(), body.Phone, true, whatsmeow.PairClientChrome, "PlugaWAPI")
 	if err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
