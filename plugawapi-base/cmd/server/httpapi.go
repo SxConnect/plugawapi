@@ -39,6 +39,7 @@ func (s *server) routes() http.Handler {
 	mux.HandleFunc("GET /api/sessions/{sid}/chats", s.handleListChats)
 	mux.HandleFunc("GET /api/sessions/{sid}/chats/{jid}/messages", s.handleListMessages)
 	mux.HandleFunc("GET /api/sessions/{sid}/contacts", s.handleListContacts)
+	mux.HandleFunc("GET /api/sessions/{sid}/avatar", s.handleAvatar)
 	mux.HandleFunc("GET /api/sessions/{sid}/profile", s.handleProfile)
 	mux.HandleFunc("GET /api/sessions/{sid}/business-profile", s.handleBusinessProfile)
 	mux.HandleFunc("GET /api/sessions/{sid}/groups", s.handleListGroups)

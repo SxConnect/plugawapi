@@ -70,9 +70,13 @@ func (s *server) handleListContacts(w http.ResponseWriter, r *http.Request) {
 	}
 	out := make([]map[string]any, 0, len(contacts))
 	for jid, info := range contacts {
+		name := info.FullName
+		if name == "" { name = info.PushName }
+		if name == "" { name = info.BusinessName }
+		if name == "" { name = jid.User }
 		out = append(out, map[string]any{
 			"jid":  jid.String(),
-			"name": info.FullName,
+			"name": name,
 		})
 	}
 	writeJSON(w, 200, map[string]any{"contacts": out})
