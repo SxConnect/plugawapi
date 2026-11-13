@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"runtime/debug"
 	"net/http"
 	"encoding/json"
 	"log/slog"
@@ -151,6 +152,7 @@ func (s *Session) rejectOffer(ctx context.Context, node *waBinary.Node, from typ
 }
 
 func (s *Session) handleEvent(rawEvt any) {
+	defer func() { if r := recover(); r != nil { s.log.Error("panic in handleEvent", "panic", r, "stack", string(debug.Stack())) } }()
 	ctx := context.Background()
 	switch evt := rawEvt.(type) {
 	case *events.Connected:
@@ -179,11 +181,25 @@ func (s *Session) handleEvent(rawEvt any) {
 			ac.cm.HandleCallTerminate(wrapCall(evt.From, evt.Data))
 		}
 	case *events.HistorySync:
+		if evt.Data == nil {
+			break
+		}
 		s.log.Info("history sync received", "conversations", len(evt.Data.GetConversations()))
-		if evt.Data != nil {
+		if s.chatStore == nil {
+			s.log.Error("chatStore is nil in HistorySync")
+			break
+		}
+		{
+			totalMsgs := 0
+			s.log.Info("STARTING loop", "nconvs", len(evt.Data.GetConversations()))
 			for _, conv := range evt.Data.GetConversations() {
 				chatJID := conv.GetID()
-				for _, hm := range conv.GetMessages() {
+				msgs := conv.GetMessages()
+				totalMsgs += len(msgs)
+				if len(msgs) > 0 {
+					s.log.Info("conv has msgs", "chat", chatJID, "count", len(msgs))
+				}
+				for _, hm := range msgs {
 					mi := hm.GetMessage()
 					if mi == nil {
 						continue
@@ -201,13 +217,20 @@ func (s *Session) handleEvent(rawEvt any) {
 					if mi.Key != nil {
 						sender = mi.Key.GetRemoteJID()
 					}
-					s.chatStore.save(s.id, chatJID, sender, content, "text", ts, fromMe)
-					s.log.Info("history msg saved", "chat", chatJID)
+					func() {
+						defer func() { if r := recover(); r != nil { s.log.Error("panic in save", "panic", r) } }()
+						s.chatStore.save(s.id, chatJID, sender, content, "text", ts, fromMe)
+						s.log.Info("history msg saved", "chat", chatJID)
+					}()
 				}
 			}
+			s.log.Info("history sync done", "conversations", len(evt.Data.GetConversations()), "messages", totalMsgs)
 		}
 	case *events.Message:
-		text := evt.Message.GetConversation()
+		text := ""
+		if evt.Message != nil {
+			text = evt.Message.GetConversation()
+		}
 		if text == "" {
 			text = "[media]"
 		}

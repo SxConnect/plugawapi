@@ -9,6 +9,7 @@ import (
 
 	"plugawapi/internal/voip/core"
 
+	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/types"
 )
 
@@ -20,6 +21,7 @@ func (s *server) routes() http.Handler {
 	mux.HandleFunc("DELETE /api/sessions/{sid}", s.handleSessionDelete)
 	mux.HandleFunc("POST /api/sessions/{sid}/logout", s.handleSessionLogout)
 	mux.HandleFunc("POST /api/sessions/{sid}/pair", s.handleSessionPair)
+	mux.HandleFunc("POST /api/sessions/{sid}/pair-code", s.handleSessionPairCode)
 	mux.HandleFunc("POST /api/sessions/{sid}/reconnect", s.handleReconnect)
 	mux.HandleFunc("POST /api/sessions/{sid}/calls", s.handleStartCall)
 	mux.HandleFunc("POST /api/sessions/{sid}/calls/{id}/webrtc", s.handleWebRTC)
@@ -320,4 +322,25 @@ func (s *server) handleReconnect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, map[string]any{"status": "ok"})
+}
+
+func (s *server) handleSessionPairCode(w http.ResponseWriter, r *http.Request) {
+	sess, ok := s.sessions.Get(r.PathValue("sid"))
+	if !ok {
+		writeJSON(w, 404, map[string]string{"error": "session not found"})
+		return
+	}
+	var body struct {
+		Phone string `json:"phone"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Phone == "" {
+		writeJSON(w, 400, map[string]string{"error": "phone required"})
+		return
+	}
+	code, err := sess.client.PairPhone(r.Context(), body.Phone, true, whatsmeow.PairClientChrome, "PlugaWAPI")
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, 200, map[string]any{"code": code})
 }

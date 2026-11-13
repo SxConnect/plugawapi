@@ -37,6 +37,7 @@ func newSessionManager(ctx context.Context, container *sqlstore.Container, broke
 		log:       log,
 		maxCalls:  maxCalls,
 		sessions:  map[string]*Session{},
+		chatStore: cs,
 	}
 }
 
