@@ -1,8 +1,8 @@
 # PlugaWAPI — Roadmap
 
 ## Fase 1 — Base (mensagens + voz 1:1) — estimativa: 2 a 4 semanas
-- Rebrand do WaCalls (MIT) para PlugaWAPI ✓ (build OK)
-- Adicionar endpoints de mensagens (texto, mídia, contatos, grupos) baseados no GOWA
+- Rebrand da base (MIT) para PlugaWAPI ✓ (build OK)
+- Adicionar endpoints de mensagens (texto, mídia, contatos, grupos) baseados na API de referência
 - Webhooks de mensagens (call.offer, message, etc.)
 - Integração com Pluga Base (configuração + chamadas)
 
@@ -18,7 +18,7 @@
 - Vídeo/grupo: AGPL (AstraCalls) se portado
 
 ## Status
-- Fase 1 (base): rebrand WaCalls OK, build OK, endpoints de envio de texto/mídia, contatos/grupos, reações, presença, check de usuário, webhook de mensagens, histórico local (SQLite) adicionados. Sem dependência do GOWA.
+- Fase 1 (base): rebrand WaCalls OK, build OK, endpoints de envio de texto/mídia, contatos/grupos, reações, presença, check de usuário, webhook de mensagens, histórico local (SQLite) adicionados. Sem dependência externa.
 - Fase 2 (parcial): Hold/Resume/Mute, Gravação (WAV) e Transcrição+Análise IA implementados. Grupo, SIP/PBX, vídeo pendentes. Transferência adiada para Fase 3 (multiusuário).
 - Próximo: integrar Pluga Base com PlugaWAPI (config + chamadas).
 

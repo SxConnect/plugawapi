@@ -41,7 +41,7 @@ func (s *server) handleListChats(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 404, map[string]string{"error": "session not found"})
 		return
 	}
-	writeJSON(w, 501, map[string]string{"error": "chat history not implemented; use GOWA for history"})
+	writeJSON(w, 501, map[string]string{"error": "chat history not implemented; not implemented"})
 }
 
 func (s *server) handleListMessages(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +53,7 @@ func (s *server) handleListMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_ = jidStr
-	writeJSON(w, 501, map[string]string{"error": "message history not implemented; use GOWA for history"})
+	writeJSON(w, 501, map[string]string{"error": "message history not implemented; not implemented"})
 }
 
 func (s *server) handleListContacts(w http.ResponseWriter, r *http.Request) {

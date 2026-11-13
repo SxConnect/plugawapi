@@ -78,7 +78,7 @@ func (s *server) handleSendMedia(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) handleWebhookConfig(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		writeJSON(w, 200, map[string]string{"webhook": os.Getenv("WACALLS_WEBHOOK_URL")})
+		writeJSON(w, 200, map[string]string{"webhook": os.Getenv("PLUGAWAPI_WEBHOOK_URL")})
 		return
 	}
 	var body struct {
@@ -88,7 +88,7 @@ func (s *server) handleWebhookConfig(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 400, map[string]string{"error": "invalid body"})
 		return
 	}
-	os.Setenv("WACALLS_WEBHOOK_URL", body.URL)
+	os.Setenv("PLUGAWAPI_WEBHOOK_URL", body.URL)
 	writeJSON(w, 200, map[string]string{"webhook": body.URL})
 }
 
