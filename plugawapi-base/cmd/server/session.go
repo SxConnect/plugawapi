@@ -201,7 +201,7 @@ func (s *Session) handleEvent(rawEvt any) {
 				}
 				for _, hm := range msgs {
 					mi := hm.GetMessage()
-					if mi == nil {
+					if mi == nil || mi.Message == nil {
 						continue
 					}
 					content := ""
@@ -226,8 +226,20 @@ func (s *Session) handleEvent(rawEvt any) {
 							if content == "" { content = "[documento]" }
 						}
 					}
+					if content == "" && mi.Message.StickerMessage != nil {
+						content = "[sticker]"
+					}
+					if content == "" && mi.Message.LocationMessage != nil {
+						content = "[localização]"
+					}
+					if content == "" && mi.Message.ContactMessage != nil {
+						content = "[contato]"
+					}
+					if content == "" && mi.Message.PollCreationMessage != nil {
+						content = "[enquete]"
+					}
 					if content == "" {
-						content = "[media]"
+						continue
 					}
 					ts := time.Unix(int64(mi.GetMessageTimestamp()), 0)
 					fromMe := mi.Key != nil && mi.Key.GetFromMe()
