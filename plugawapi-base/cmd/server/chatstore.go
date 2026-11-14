@@ -65,3 +65,21 @@ func (c *chatStore) listMessages(sessionID, chatJID string, limit int) []map[str
 	}
 	return out
 }
+
+func (c *chatStore) saveContacts(sessionID string, contacts []map[string]string) {
+	for _, ct := range contacts {
+		_, _ = c.db.Exec(`INSERT OR REPLACE INTO contacts (session_id, jid, name) VALUES (?,?,?)`, sessionID, ct["jid"], ct["name"])
+	}
+}
+
+func (c *chatStore) listContacts(sessionID string) []map[string]string {
+	rows, _ := c.db.Query(`SELECT jid, name FROM contacts WHERE session_id=? ORDER BY name`, sessionID)
+	defer rows.Close()
+	out := []map[string]string{}
+	for rows.Next() {
+		var jid, name string
+		rows.Scan(&jid, &name)
+		out = append(out, map[string]string{"jid": jid, "name": name})
+	}
+	return out
+}

@@ -110,3 +110,38 @@ func (s *server) handleListGroups(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]any{"groups": out})
 }
 
+
+
+func (s *server) handleContactsSync(w http.ResponseWriter, r *http.Request) {
+	sid := r.PathValue("sid")
+	sess, ok := s.sessions.Get(sid)
+	if !ok {
+		writeJSON(w, 404, map[string]string{"error": "session not found"})
+		return
+	}
+	contacts, err := sess.client.Store.Contacts.GetAllContacts(r.Context())
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	list := []map[string]string{}
+	for jid, info := range contacts {
+		name := info.FullName
+		if name == "" { name = info.PushName }
+		if name == "" { name = info.BusinessName }
+		list = append(list, map[string]string{"jid": jid.String(), "name": name})
+	}
+	s.chatStore.saveContacts(sid, list)
+	writeJSON(w, 200, map[string]any{"count": len(list)})
+}
+
+func (s *server) handleContactsList(w http.ResponseWriter, r *http.Request) {
+	sid := r.PathValue("sid")
+	_, ok := s.sessions.Get(sid)
+	if !ok {
+		writeJSON(w, 404, map[string]string{"error": "session not found"})
+		return
+	}
+	out := s.chatStore.listContacts(sid)
+	writeJSON(w, 200, map[string]any{"contacts": out})
+}

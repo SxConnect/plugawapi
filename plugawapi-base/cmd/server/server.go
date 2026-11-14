@@ -56,6 +56,12 @@ func newServer(ctx context.Context, dbPath, staticDir string, maxCalls int, log 
 		is_from_me INTEGER,
 		created_at TEXT
 	)`)
+	_, _ = chatDB.Exec(`CREATE TABLE IF NOT EXISTS contacts (
+		session_id TEXT NOT NULL,
+		jid TEXT NOT NULL,
+		name TEXT,
+		PRIMARY KEY (session_id, jid)
+	)`)
 	cs := newChatStore(chatDB)
 	store.SetOSInfo("PlugaWAPI", [3]uint32{0, 1, 0})
 	container := sqlstore.NewWithDB(db, "sqlite3", waLog.Noop)
