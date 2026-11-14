@@ -81,6 +81,6 @@ func (s *server) handleMediaUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.chatStore.save(sid, jid.String(), sess.client.Store.ID.String(), caption, mtype, uploaded.URL, resp.Timestamp, true)
-	writeJSON(w, 200, map[string]any{"id": resp.ID, "timestamp": resp.Timestamp})
+	writeJSON(w, 200, map[string]any{"id": resp.ID, "timestamp": resp.Timestamp, "url": uploaded.URL})
 }
 
