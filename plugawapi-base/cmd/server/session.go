@@ -260,6 +260,7 @@ func (s *Session) handleEvent(rawEvt any) {
 		s.log.Info("incoming message event", "from", evt.Info.Sender.String())
 		text := ""
 		if evt.Message != nil {
+			s.log.Info("msg types", "conv", evt.Message.GetConversation() != "", "img", evt.Message.ImageMessage != nil, "vid", evt.Message.VideoMessage != nil, "aud", evt.Message.AudioMessage != nil, "doc", evt.Message.DocumentMessage != nil, "stk", evt.Message.StickerMessage != nil, "loc", evt.Message.LocationMessage != nil, "con", evt.Message.ContactMessage != nil, "ext", evt.Message.ExtendedTextMessage != nil)
 			text = evt.Message.GetConversation()
 			if text == "" && evt.Message.ImageMessage != nil { text = "[imagem]" }
 			if text == "" && evt.Message.VideoMessage != nil { text = "[video]" }
