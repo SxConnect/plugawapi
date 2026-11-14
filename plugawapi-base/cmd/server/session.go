@@ -239,7 +239,7 @@ func (s *Session) handleEvent(rawEvt any) {
 						content = "[enquete]"
 					}
 					if content == "" {
-						continue
+						content = "[mensagem]"
 					}
 					ts := time.Unix(int64(mi.GetMessageTimestamp()), 0)
 					fromMe := mi.Key != nil && mi.Key.GetFromMe()
