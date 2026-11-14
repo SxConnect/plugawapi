@@ -66,6 +66,7 @@ func (s *server) routes() http.Handler {
 
 
 	mux.HandleFunc("GET /api/events", s.handleEvents)
+	mux.HandleFunc("GET /docs", s.handleDocs)
 
 	if s.staticDir != "" {
 		if _, err := os.Stat(s.staticDir); err == nil {

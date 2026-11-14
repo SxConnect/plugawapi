@@ -79,6 +79,7 @@ export const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
         ))}
         {sessions.length === 0 && <p className="px-2 text-sm text-muted-foreground">No accounts yet.</p>}
       </div>
+      <a href="/docs" target="_blank" className="text-xs text-muted-foreground hover:text-foreground text-center block mb-1">Documentação</a>
       <Button variant="outline" className="w-full" onClick={onNew} disabled={creating}>
         {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
         New session
