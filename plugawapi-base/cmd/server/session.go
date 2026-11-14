@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 	"net/http"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"os"
 	"sync"
@@ -266,6 +267,7 @@ func (s *Session) handleEvent(rawEvt any) {
 					}
 					func() {
 						defer func() { if r := recover(); r != nil { s.log.Error("panic in save", "panic", r) } }()
+						s.log.Info("saving content", "len", len(content), "firstbyte", fmt.Sprintf("%x", []byte(content)[:1]))
 						s.chatStore.save(s.id, chatJID, sender, content, "text", "", ts, fromMe)
 						s.log.Info("history msg saved", "chat", chatJID)
 					}()
