@@ -55,6 +55,7 @@ func (s *server) routes() http.Handler {
 	mux.HandleFunc("POST /api/sessions/{sid}/react", s.handleReact)
 	mux.HandleFunc("POST /api/sessions/{sid}/presence", s.handlePresenceSubscribe)
 	mux.HandleFunc("GET /api/sessions/{sid}/check", s.handleCheckUser)
+	mux.HandleFunc("POST /api/media/proxy", s.handleMediaProxy)
 	mux.HandleFunc("GET /api/webhook", s.handleWebhookConfig)
 	mux.HandleFunc("POST /api/webhook", s.handleWebhookConfig)
 
