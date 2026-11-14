@@ -18,6 +18,7 @@ func (s *server) handleAvatar(w http.ResponseWriter, r *http.Request) {
 	jid, _ := types.ParseJID(jidStr)
 	info, err := sess.client.GetProfilePictureInfo(r.Context(), jid, &whatsmeow.GetProfilePictureParams{})
 	if err != nil {
+		s.log.Warn("avatar fetch failed", "jid", jid, "err", err)
 		writeJSON(w, 200, map[string]any{"url": ""})
 		return
 	}
