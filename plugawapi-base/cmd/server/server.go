@@ -57,13 +57,15 @@ func newServer(ctx context.Context, dbPath, staticDir string, maxCalls int, log 
 		is_from_me INTEGER,
 		created_at TEXT
 	)`)
-	_, _ = chatDB.Exec(`ALTER TABLE messages ADD COLUMN media_url TEXT`)
+	_, _ = chatDB.Exec(`CREATE INDEX IF NOT EXISTS idx_messages_session_chat ON messages(session_id, chat_jid)`)
+	_, _ = chatDB.Exec(`CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id)`)
 	_, _ = chatDB.Exec(`CREATE TABLE IF NOT EXISTS contacts (
 		session_id TEXT NOT NULL,
 		jid TEXT NOT NULL,
 		name TEXT,
 		PRIMARY KEY (session_id, jid)
 	)`)
+	_, _ = chatDB.Exec(`CREATE INDEX IF NOT EXISTS idx_contacts_session ON contacts(session_id)`)
 	cs := newChatStore(chatDB)
 	store.SetOSInfo("PlugaWAPI", [3]uint32{0, 1, 0})
 	container := sqlstore.NewWithDB(db, "sqlite3", waLog.Noop)
