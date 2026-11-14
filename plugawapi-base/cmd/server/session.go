@@ -297,7 +297,7 @@ func (s *Session) handleEvent(rawEvt any) {
 		}
 		if text == "" { text = "[media]" }
 		s.chatStore.save(s.id, evt.Info.Chat.String(), evt.Info.Sender.String(), text, mediaType, mediaURL, evt.Info.Timestamp, evt.Info.IsFromMe)
-		s.log.Info("incoming saved", "chat", evt.Info.Chat.String(), "text", text)
+		s.log.Info("incoming saved", "chat", evt.Info.Chat.String(), "text", text, "mediaType", mediaType, "mediaURL", mediaURL)
 		if url := os.Getenv("PLUGAWAPI_WEBHOOK_URL"); url != "" {
 			go func() {
 				b, _ := json.Marshal(map[string]any{

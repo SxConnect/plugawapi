@@ -38,7 +38,9 @@ func (s *server) routes() http.Handler {
 	mux.HandleFunc("GET /api/sessions/{sid}/history", s.handleHistory)
 
 	mux.HandleFunc("POST /api/sessions/{sid}/messages", s.handleSendText)
+	mux.HandleFunc("POST /api/sessions/{sid}/location", s.handleSendLocation)
 	mux.HandleFunc("POST /api/sessions/{sid}/media", s.handleSendMedia)
+	mux.HandleFunc("POST /api/sessions/{sid}/media-upload", s.handleMediaUpload)
 	mux.HandleFunc("GET /api/sessions/{sid}/chats", s.handleListChats)
 	mux.HandleFunc("GET /api/sessions/{sid}/chats/{jid}/messages", s.handleListMessages)
 	mux.HandleFunc("GET /api/sessions/{sid}/contacts", s.handleListContacts)
