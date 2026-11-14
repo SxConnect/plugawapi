@@ -26,7 +26,7 @@ func openDB(dbPath string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	db.SetMaxOpenConns(1)
+	db.SetMaxOpenConns(4)
 	return db, nil
 }
 
