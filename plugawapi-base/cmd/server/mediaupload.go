@@ -17,6 +17,12 @@ func (s *server) handleMediaUpload(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 404, map[string]string{"error": "session not found"})
 		return
 	}
+	if !sess.client.IsConnected() {
+		if err := sess.client.Connect(); err != nil {
+			writeJSON(w, 500, map[string]string{"error": "connect failed: " + err.Error()})
+			return
+		}
+	}
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		writeJSON(w, 400, map[string]string{"error": "invalid form"})
 		return
