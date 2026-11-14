@@ -162,6 +162,23 @@ func (s *Session) handleEvent(rawEvt any) {
 		s.setAuth(AuthSnapshot{State: "open", Paired: true})
 	case *events.LoggedOut:
 		s.setAuth(AuthSnapshot{State: "logged_out", Paired: false})
+	case *events.Disconnected:
+		s.log.Warn("disconnected, attempting reconnect")
+		go func() {
+			for i := 0; i < 5; i++ {
+				time.Sleep(time.Duration(i+1) * 2 * time.Second)
+				if s.client.IsConnected() {
+					return
+				}
+				if err := s.client.Connect(); err != nil {
+					s.log.Warn("reconnect failed", "attempt", i+1, "err", err)
+					continue
+				}
+				s.log.Info("reconnected", "attempt", i+1)
+				return
+			}
+			s.log.Error("reconnect exhausted")
+		}()
 	case *events.CallOffer:
 		s.onIncomingOffer(ctx, evt)
 	case *events.CallAccept:
@@ -343,7 +360,16 @@ func (s *Session) handleEvent(rawEvt any) {
 					"text":     text,
 					"isFromMe": evt.Info.IsFromMe,
 				})
-				http.Post(url, "application/json", bytes.NewReader(b))
+				for i := 0; i < 3; i++ {
+					resp, err := http.Post(url, "application/json", bytes.NewReader(b))
+					if err == nil && resp.StatusCode < 300 {
+						resp.Body.Close()
+						return
+					}
+					if resp != nil { resp.Body.Close() }
+					time.Sleep(time.Duration(i+1) * time.Second)
+				}
+				s.log.Warn("webhook delivery failed after retries")
 			}()
 		}
 	}
