@@ -257,10 +257,22 @@ func (s *Session) handleEvent(rawEvt any) {
 			s.log.Info("history sync done", "conversations", len(evt.Data.GetConversations()), "messages", totalMsgs)
 		}
 	case *events.Message:
+		s.log.Info("incoming message event", "from", evt.Info.Sender.String())
 		text := ""
 		if evt.Message != nil {
 			text = evt.Message.GetConversation()
+			if text == "" && evt.Message.ImageMessage != nil { text = "[imagem]" }
+			if text == "" && evt.Message.VideoMessage != nil { text = "[video]" }
+			if text == "" && evt.Message.AudioMessage != nil { text = "[audio]" }
+			if text == "" && evt.Message.DocumentMessage != nil { text = "[documento]" }
+			if text == "" && evt.Message.StickerMessage != nil { text = "[sticker]" }
+			if text == "" && evt.Message.LocationMessage != nil { text = "[localizacao]" }
+			if text == "" && evt.Message.ContactMessage != nil { text = "[contato]" }
+			if text == "" && evt.Message.ExtendedTextMessage != nil { text = evt.Message.ExtendedTextMessage.GetText() }
 		}
+		if text == "" { text = "[media]" }
+		s.chatStore.save(s.id, evt.Info.Chat.String(), evt.Info.Sender.String(), text, "text", evt.Info.Timestamp, evt.Info.IsFromMe)
+		s.log.Info("incoming saved", "chat", evt.Info.Chat.String(), "text", text)
 		if text == "" {
 			text = "[media]"
 		}
