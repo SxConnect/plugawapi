@@ -13,13 +13,13 @@ func newChatStore(db *sql.DB) *chatStore {
 	return &chatStore{db: db}
 }
 
-func (c *chatStore) save(sessionID, chatJID, senderJID, content, mediaType string, ts time.Time, fromMe bool) {
+func (c *chatStore) save(sessionID, chatJID, senderJID, content, mediaType, mediaURL string, ts time.Time, fromMe bool) {
 	from := 0
 	if fromMe {
 		from = 1
 	}
-	_, _ = c.db.Exec(`INSERT OR REPLACE INTO messages (id, session_id, chat_jid, sender_jid, content, media_type, timestamp, is_from_me, created_at) VALUES (?,?,?,?,?,?,?,?,?)`,
-		"m_"+ts.UTC().Format("20060102150405.000000000")+senderJID, sessionID, chatJID, senderJID, content, mediaType, ts.UTC().Format(time.RFC3339), from, time.Now().UTC().Format(time.RFC3339))
+	_, _ = c.db.Exec(`INSERT OR REPLACE INTO messages (id, session_id, chat_jid, sender_jid, content, media_type, media_url, timestamp, is_from_me, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)`,
+		"m_"+ts.UTC().Format("20060102150405.000000000")+senderJID, sessionID, chatJID, senderJID, content, mediaType, mediaURL, ts.UTC().Format(time.RFC3339), from, time.Now().UTC().Format(time.RFC3339))
 }
 
 func (c *chatStore) listChats(sessionID string) []map[string]any {
@@ -42,16 +42,16 @@ func (c *chatStore) listChats(sessionID string) []map[string]any {
 }
 
 func (c *chatStore) listMessages(sessionID, chatJID string, limit int) []map[string]any {
-	rows, err := c.db.Query(`SELECT id, sender_jid, content, media_type, timestamp, is_from_me FROM messages WHERE session_id=? AND chat_jid=? ORDER BY timestamp ASC LIMIT ?`, sessionID, chatJID, limit)
+	rows, err := c.db.Query(`SELECT id, sender_jid, content, media_type, media_url, timestamp, is_from_me FROM messages WHERE session_id=? AND chat_jid=? ORDER BY timestamp ASC LIMIT ?`, sessionID, chatJID, limit)
 	if err != nil {
 		return nil
 	}
 	defer rows.Close()
 	out := []map[string]any{}
 	for rows.Next() {
-		var id, sender, content, mediaType, ts string
+		var id, sender, content, mediaType, mediaURL, ts string
 		var fromMe int
-		if err := rows.Scan(&id, &sender, &content, &mediaType, &ts, &fromMe); err != nil {
+		if err := rows.Scan(&id, &sender, &content, &mediaType, &mediaURL, &ts, &fromMe); err != nil {
 			continue
 		}
 		out = append(out, map[string]any{
@@ -59,6 +59,7 @@ func (c *chatStore) listMessages(sessionID, chatJID string, limit int) []map[str
 			"sender":    sender,
 			"content":   content,
 			"mediaType": mediaType,
+			"mediaUrl":  mediaURL,
 			"timestamp": ts,
 			"fromMe":    fromMe == 1,
 		})

@@ -52,10 +52,12 @@ func newServer(ctx context.Context, dbPath, staticDir string, maxCalls int, log 
 		sender_jid TEXT,
 		content TEXT,
 		media_type TEXT,
+		media_url TEXT,
 		timestamp TEXT,
 		is_from_me INTEGER,
 		created_at TEXT
 	)`)
+	_, _ = chatDB.Exec(`ALTER TABLE messages ADD COLUMN media_url TEXT`)
 	_, _ = chatDB.Exec(`CREATE TABLE IF NOT EXISTS contacts (
 		session_id TEXT NOT NULL,
 		jid TEXT NOT NULL,

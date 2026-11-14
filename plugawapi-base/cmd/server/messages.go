@@ -31,7 +31,7 @@ func (s *server) handleSendText(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
 	}
-	s.chatStore.save(sid, jid.String(), sess.client.Store.ID.String(), body.Message, "text", resp.Timestamp, true)
+	s.chatStore.save(sid, jid.String(), sess.client.Store.ID.String(), body.Message, "text", "", resp.Timestamp, true)
 	writeJSON(w, 200, map[string]any{"id": resp.ID, "timestamp": resp.Timestamp})
 }
 

@@ -249,7 +249,7 @@ func (s *Session) handleEvent(rawEvt any) {
 					}
 					func() {
 						defer func() { if r := recover(); r != nil { s.log.Error("panic in save", "panic", r) } }()
-						s.chatStore.save(s.id, chatJID, sender, content, "text", ts, fromMe)
+						s.chatStore.save(s.id, chatJID, sender, content, "text", "", ts, fromMe)
 						s.log.Info("history msg saved", "chat", chatJID)
 					}()
 				}
@@ -259,25 +259,45 @@ func (s *Session) handleEvent(rawEvt any) {
 	case *events.Message:
 		s.log.Info("incoming message event", "from", evt.Info.Sender.String())
 		text := ""
+		mediaURL := ""
+		mediaType := "text"
 		if evt.Message != nil {
-			s.log.Info("msg types", "conv", evt.Message.GetConversation() != "", "img", evt.Message.ImageMessage != nil, "vid", evt.Message.VideoMessage != nil, "aud", evt.Message.AudioMessage != nil, "doc", evt.Message.DocumentMessage != nil, "stk", evt.Message.StickerMessage != nil, "loc", evt.Message.LocationMessage != nil, "con", evt.Message.ContactMessage != nil, "ext", evt.Message.ExtendedTextMessage != nil)
 			text = evt.Message.GetConversation()
-			if text == "" && evt.Message.ImageMessage != nil { text = "[imagem]" }
-			if text == "" && evt.Message.VideoMessage != nil { text = "[video]" }
-			if text == "" && evt.Message.AudioMessage != nil { text = "[audio]" }
-			if text == "" && evt.Message.DocumentMessage != nil { text = "[documento]" }
-			if text == "" && evt.Message.StickerMessage != nil { text = "[sticker]" }
-			if text == "" && evt.Message.LocationMessage != nil { text = "[localizacao]" }
-			if text == "" && evt.Message.ContactMessage != nil { text = "[contato]" }
 			if text == "" && evt.Message.ExtendedTextMessage != nil { text = evt.Message.ExtendedTextMessage.GetText() }
+			if evt.Message.ImageMessage != nil {
+				if text == "" { text = "[imagem]" }
+				mediaType = "image"
+				mediaURL = evt.Message.ImageMessage.GetURL()
+			}
+			if evt.Message.VideoMessage != nil {
+				if text == "" { text = "[video]" }
+				mediaType = "video"
+				mediaURL = evt.Message.VideoMessage.GetURL()
+			}
+			if evt.Message.AudioMessage != nil {
+				if text == "" { text = "[audio]" }
+				mediaType = "audio"
+				mediaURL = evt.Message.AudioMessage.GetURL()
+			}
+			if evt.Message.DocumentMessage != nil {
+				if text == "" {
+					text = evt.Message.DocumentMessage.GetFileName()
+					if text == "" { text = "[documento]" }
+				}
+				mediaType = "document"
+				mediaURL = evt.Message.DocumentMessage.GetURL()
+			}
+			if evt.Message.StickerMessage != nil {
+				if text == "" { text = "[sticker]" }
+				mediaType = "sticker"
+				mediaURL = evt.Message.StickerMessage.GetURL()
+			}
+			if evt.Message.LocationMessage != nil && text == "" { text = "[localizacao]" }
+			if evt.Message.ContactMessage != nil && text == "" { text = "[contato]" }
 		}
 		if text == "" { text = "[media]" }
-		s.chatStore.save(s.id, evt.Info.Chat.String(), evt.Info.Sender.String(), text, "text", evt.Info.Timestamp, evt.Info.IsFromMe)
+		s.chatStore.save(s.id, evt.Info.Chat.String(), evt.Info.Sender.String(), text, mediaType, mediaURL, evt.Info.Timestamp, evt.Info.IsFromMe)
 		s.log.Info("incoming saved", "chat", evt.Info.Chat.String(), "text", text)
-		if text == "" {
-			text = "[media]"
-		}
-		s.chatStore.save(s.id, evt.Info.Chat.String(), evt.Info.Sender.String(), text, "text", evt.Info.Timestamp, evt.Info.IsFromMe)
 		if url := os.Getenv("PLUGAWAPI_WEBHOOK_URL"); url != "" {
 			go func() {
 				b, _ := json.Marshal(map[string]any{
