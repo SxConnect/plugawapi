@@ -295,8 +295,43 @@ func (s *Session) handleEvent(rawEvt any) {
 			if evt.Message.LocationMessage != nil && text == "" { text = "[localizacao]" }
 			if evt.Message.ContactMessage != nil && text == "" { text = "[contato]" }
 		}
+		buttonID := ""
+		if evt.Message != nil {
+			if br := evt.Message.ButtonsResponseMessage; br != nil {
+				buttonID = br.GetSelectedButtonID()
+				if buttonID == "" { buttonID = br.GetSelectedDisplayText() }
+			}
+			if lr := evt.Message.ListResponseMessage; lr != nil {
+				buttonID = lr.GetSingleSelectReply().GetSelectedRowID()
+			}
+			if ir := evt.Message.InteractiveResponseMessage; ir != nil {
+				if nfr := ir.GetNativeFlowResponseMessage(); nfr != nil {
+					buttonID = nfr.GetParamsJSON()
+				}
+			}
+		}
+		if buttonID != "" {
+			text = "button:" + buttonID
+			mediaType = "button_reply"
+		}
 		if text == "" { text = "[media]" }
 		s.chatStore.save(s.id, evt.Info.Chat.String(), evt.Info.Sender.String(), text, mediaType, mediaURL, evt.Info.Timestamp, evt.Info.IsFromMe)
+		// dispatch webhook with button_id
+		if buttonID != "" {
+			if url := os.Getenv("PLUGAWAPI_WEBHOOK_URL"); url != "" {
+				go func() {
+					b, _ := json.Marshal(map[string]any{
+						"session":   s.id,
+						"event":     "button_reply",
+						"from":      evt.Info.Sender.String(),
+						"chat":      evt.Info.Chat.String(),
+						"button_id": buttonID,
+						"isFromMe":  evt.Info.IsFromMe,
+					})
+					http.Post(url, "application/json", bytes.NewReader(b))
+				}()
+			}
+		}
 		s.log.Info("incoming saved", "chat", evt.Info.Chat.String(), "text", text, "mediaType", mediaType, "mediaURL", mediaURL)
 		if url := os.Getenv("PLUGAWAPI_WEBHOOK_URL"); url != "" {
 			go func() {
