@@ -16,6 +16,12 @@ func (s *server) handleSendText(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 404, map[string]string{"error": "session not found"})
 		return
 	}
+	if !sess.client.IsConnected() {
+		if err := sess.client.Connect(); err != nil {
+			writeJSON(w, 500, map[string]string{"error": "connect failed: " + err.Error()})
+			return
+		}
+	}
 	var body struct {
 		To      string `json:"to"`
 		Message string `json:"message"`
