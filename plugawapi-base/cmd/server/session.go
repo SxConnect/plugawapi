@@ -207,6 +207,24 @@ func (s *Session) handleEvent(rawEvt any) {
 					content := ""
 					if mi.Message != nil {
 						content = mi.Message.GetConversation()
+						if content == "" && mi.Message.ExtendedTextMessage != nil {
+							content = mi.Message.ExtendedTextMessage.GetText()
+						}
+						if content == "" && mi.Message.ImageMessage != nil {
+							content = mi.Message.ImageMessage.GetCaption()
+							if content == "" { content = "[imagem]" }
+						}
+						if content == "" && mi.Message.VideoMessage != nil {
+							content = mi.Message.VideoMessage.GetCaption()
+							if content == "" { content = "[video]" }
+						}
+						if content == "" && mi.Message.AudioMessage != nil {
+							content = "[audio]"
+						}
+						if content == "" && mi.Message.DocumentMessage != nil {
+							content = mi.Message.DocumentMessage.GetFileName()
+							if content == "" { content = "[documento]" }
+						}
 					}
 					if content == "" {
 						content = "[media]"
