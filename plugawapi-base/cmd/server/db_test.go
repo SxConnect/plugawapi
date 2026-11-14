@@ -13,8 +13,8 @@ func TestOpenDBConcurrencyConfig(t *testing.T) {
 	}
 	defer db.Close()
 
-	if got := db.Stats().MaxOpenConnections; got != 1 {
-		t.Fatalf("expected pool capped to 1 connection, got %d", got)
+	if got := db.Stats().MaxOpenConnections; got != 4 {
+		t.Fatalf("expected pool capped to 4 connections, got %d", got)
 	}
 
 	var mode string

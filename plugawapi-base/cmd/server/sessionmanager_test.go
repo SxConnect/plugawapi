@@ -30,7 +30,9 @@ func newTestManager(t *testing.T) *SessionManager {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return newSessionManager(ctx, container, NewBroker(), store, waLog.Noop, slog.Default(), 0)
+	chatDB, _ := openDB("test_chat.db")
+	cs := newChatStore(chatDB)
+	return newSessionManager(ctx, container, NewBroker(), store, waLog.Noop, slog.Default(), 0, cs)
 }
 
 func (m *SessionManager) addUnconnected(t *testing.T, name string) *Session {
@@ -40,7 +42,7 @@ func (m *SessionManager) addUnconnected(t *testing.T, name string) *Session {
 		t.Fatal(err)
 	}
 	client := whatsmeow.NewClient(m.container.NewDevice(), waLog.Noop)
-	s := newSession(m, id, name, client)
+	s := newSession(m, id, name, client, m.chatStore)
 	m.register(s)
 	return s
 }
