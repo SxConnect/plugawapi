@@ -50,3 +50,24 @@ func TestSessionCreateAndList(t *testing.T) {
 		t.Fatalf("list: expected 200, got %d", rr2.Code)
 	}
 }
+
+func TestSessionNotFound(t *testing.T) {
+	dbPath := "test_nf.db"
+	defer os.Remove(dbPath)
+	defer os.Remove(dbPath + "_chat.db")
+	srv, err := newServer(context.Background(), dbPath, "", 8, slogDefault())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer srv.sessions.disconnectAll()
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/api/sessions/nonexistent/chats", nil)
+	srv.routes().ServeHTTP(rr, req)
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", rr.Code)
+	}
+}
+
+func slogDefault() *slog.Logger {
+	return slog.Default()
+}
