@@ -3,12 +3,12 @@ package main
 import (
 	"bytes"
 	"context"
-	"runtime/debug"
-	"net/http"
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -46,9 +46,9 @@ func newSession(mgr *SessionManager, id, name string, client *whatsmeow.Client, 
 		mgr:       mgr,
 		chatStore: cs,
 		log:       mgr.log.With("session", id),
-		client: client,
-		auth:   AuthSnapshot{State: "connecting"},
-		reg:    newCallRegistry(),
+		client:    client,
+		auth:      AuthSnapshot{State: "connecting"},
+		reg:       newCallRegistry(),
 	}
 	client.AddEventHandler(s.handleEvent)
 	return s
@@ -153,7 +153,11 @@ func (s *Session) rejectOffer(ctx context.Context, node *waBinary.Node, from typ
 }
 
 func (s *Session) handleEvent(rawEvt any) {
-	defer func() { if r := recover(); r != nil { s.log.Error("panic in handleEvent", "panic", r, "stack", string(debug.Stack())) } }()
+	defer func() {
+		if r := recover(); r != nil {
+			s.log.Error("panic in handleEvent", "panic", r, "stack", string(debug.Stack()))
+		}
+	}()
 	ctx := context.Background()
 	switch evt := rawEvt.(type) {
 	case *events.Connected:
@@ -230,18 +234,24 @@ func (s *Session) handleEvent(rawEvt any) {
 						}
 						if content == "" && mi.Message.ImageMessage != nil {
 							content = mi.Message.ImageMessage.GetCaption()
-							if content == "" { content = "[imagem]" }
+							if content == "" {
+								content = "[imagem]"
+							}
 						}
 						if content == "" && mi.Message.VideoMessage != nil {
 							content = mi.Message.VideoMessage.GetCaption()
-							if content == "" { content = "[video]" }
+							if content == "" {
+								content = "[video]"
+							}
 						}
 						if content == "" && mi.Message.AudioMessage != nil {
 							content = "[audio]"
 						}
 						if content == "" && mi.Message.DocumentMessage != nil {
 							content = mi.Message.DocumentMessage.GetFileName()
-							if content == "" { content = "[documento]" }
+							if content == "" {
+								content = "[documento]"
+							}
 						}
 					}
 					if content == "" && mi.Message.StickerMessage != nil {
@@ -266,7 +276,11 @@ func (s *Session) handleEvent(rawEvt any) {
 						sender = mi.Key.GetRemoteJID()
 					}
 					func() {
-						defer func() { if r := recover(); r != nil { s.log.Error("panic in save", "panic", r) } }()
+						defer func() {
+							if r := recover(); r != nil {
+								s.log.Error("panic in save", "panic", r)
+							}
+						}()
 						s.log.Info("saving content", "len", len(content), "firstbyte", fmt.Sprintf("%x", []byte(content)[:1]))
 						s.chatStore.save(s.id, chatJID, sender, content, "text", "", ts, fromMe)
 						s.log.Info("history msg saved", "chat", chatJID)
@@ -282,43 +296,61 @@ func (s *Session) handleEvent(rawEvt any) {
 		mediaType := "text"
 		if evt.Message != nil {
 			text = evt.Message.GetConversation()
-			if text == "" && evt.Message.ExtendedTextMessage != nil { text = evt.Message.ExtendedTextMessage.GetText() }
+			if text == "" && evt.Message.ExtendedTextMessage != nil {
+				text = evt.Message.ExtendedTextMessage.GetText()
+			}
 			if evt.Message.ImageMessage != nil {
-				if text == "" { text = "[imagem]" }
+				if text == "" {
+					text = "[imagem]"
+				}
 				mediaType = "image"
 				mediaURL = evt.Message.ImageMessage.GetURL()
 			}
 			if evt.Message.VideoMessage != nil {
-				if text == "" { text = "[video]" }
+				if text == "" {
+					text = "[video]"
+				}
 				mediaType = "video"
 				mediaURL = evt.Message.VideoMessage.GetURL()
 			}
 			if evt.Message.AudioMessage != nil {
-				if text == "" { text = "[audio]" }
+				if text == "" {
+					text = "[audio]"
+				}
 				mediaType = "audio"
 				mediaURL = evt.Message.AudioMessage.GetURL()
 			}
 			if evt.Message.DocumentMessage != nil {
 				if text == "" {
 					text = evt.Message.DocumentMessage.GetFileName()
-					if text == "" { text = "[documento]" }
+					if text == "" {
+						text = "[documento]"
+					}
 				}
 				mediaType = "document"
 				mediaURL = evt.Message.DocumentMessage.GetURL()
 			}
 			if evt.Message.StickerMessage != nil {
-				if text == "" { text = "[sticker]" }
+				if text == "" {
+					text = "[sticker]"
+				}
 				mediaType = "sticker"
 				mediaURL = evt.Message.StickerMessage.GetURL()
 			}
-			if evt.Message.LocationMessage != nil && text == "" { text = "[localizacao]" }
-			if evt.Message.ContactMessage != nil && text == "" { text = "[contato]" }
+			if evt.Message.LocationMessage != nil && text == "" {
+				text = "[localizacao]"
+			}
+			if evt.Message.ContactMessage != nil && text == "" {
+				text = "[contato]"
+			}
 		}
 		buttonID := ""
 		if evt.Message != nil {
 			if br := evt.Message.ButtonsResponseMessage; br != nil {
 				buttonID = br.GetSelectedButtonID()
-				if buttonID == "" { buttonID = br.GetSelectedDisplayText() }
+				if buttonID == "" {
+					buttonID = br.GetSelectedDisplayText()
+				}
 			}
 			if lr := evt.Message.ListResponseMessage; lr != nil {
 				buttonID = lr.GetSingleSelectReply().GetSelectedRowID()
@@ -333,7 +365,9 @@ func (s *Session) handleEvent(rawEvt any) {
 			text = "button:" + buttonID
 			mediaType = "button_reply"
 		}
-		if text == "" { text = "[media]" }
+		if text == "" {
+			text = "[media]"
+		}
 		s.chatStore.save(s.id, evt.Info.Chat.String(), evt.Info.Sender.String(), text, mediaType, mediaURL, evt.Info.Timestamp, evt.Info.IsFromMe)
 		// dispatch webhook with button_id
 		if buttonID != "" {
@@ -368,7 +402,9 @@ func (s *Session) handleEvent(rawEvt any) {
 						resp.Body.Close()
 						return
 					}
-					if resp != nil { resp.Body.Close() }
+					if resp != nil {
+						resp.Body.Close()
+					}
 					time.Sleep(time.Duration(i+1) * time.Second)
 				}
 				s.log.Warn("webhook delivery failed after retries")
@@ -429,7 +465,7 @@ func (s *Session) info() SessionInfo {
 	if id := s.client.Store.ID; id != nil {
 		jid = id.String()
 	}
-	return SessionInfo{ID: s.id, Name: s.name, JID: jid, State: a.State, Paired: a.Paired || jid != ""}
+	return SessionInfo{ID: s.id, Name: s.name, JID: jid, State: a.State, Paired: a.Paired || jid != "", QR: a.QR}
 }
 
 func (s *Session) setBridge(callID string, b *Bridge) {
